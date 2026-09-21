@@ -59,6 +59,34 @@ Pin pools on the live map: `FogOfWarPinTemplate`, `GroupMembersPinTemplate`,
 `MapExplorationPinTemplate`, `MapHighlightPinTemplate`, `QuestBlobPinTemplate`,
 `QuestPinTemplate`, `ScenarioBlobPinTemplate`.
 
+**`FogOfWarPinTemplate` is inert.** Blizzard's second, coarser fog mechanism is driven by
+the `UiMapFogOfWar` DB2, which **does not exist in build 1.60.1.69913** — wago returns
+`404 Table not found`, while the same build serves `WorldMapOverlay` normally and retail
+latest serves `UiMapFogOfWar` with 11 rows. The shared canvas code registers the pin type
+unconditionally, but Forever ships no data to drive it. The exploration overlay system is
+therefore the only fog on Forever, and it is the system Veilmap targets.
+
+### 2.4 Settings and stretch-goal APIs
+
+Confirmed present, making a zero-dependency options panel viable without a hand-built
+canvas: `Settings.RegisterAddOnCategory`, `RegisterVerticalLayoutCategory`,
+`RegisterCanvasLayoutCategory`, `RegisterProxySetting`, `CreateCheckbox`, `CreateSlider`,
+`CreateSliderOptions`, `SettingsPanel`, and `ColorPickerFrame.SetupColorPickerAndShow`.
+
+Absent, both with direct modern replacements: `Settings.CreateSetting` (use
+`RegisterProxySetting`) and `OpacitySliderFrame` (the modern colour picker has a built-in
+opacity slider). Also absent: `InterfaceOptions_AddCategory` and
+`InterfaceOptionsFrame_OpenToCategory`, the pre-Dragonflight options API.
+
+Stretch-goal APIs are all present: `C_Map.GetAreaInfo`, `C_Map.SetUserWaypoint`,
+`C_Map.CanSetUserWaypointOnMap`, `C_Map.GetUserWaypoint`, `C_Map.ClearUserWaypoint`,
+`UiMapPoint.CreateFromCoordinates`, and `C_SuperTrack.SetSuperTrackedUserWaypoint`.
+Phase 4 can therefore offer a real tracked waypoint, not merely a tooltip.
+
+Misc plumbing confirmed: `hooksecurefunc`, `issecurevariable`, `C_Timer.After`, `Mixin`,
+`CreateFromMixins`, `CreateFramePool`, `CreateTexturePool`, `CreateObjectPool`,
+`C_XMLUtil.GetTemplateInfo`.
+
 `MapExplorationPinTemplate` exposes `RefreshOverlays`, `overlayTexturePool`,
 `textureLoadGroup`, and `dataProvider:GetDrawLayer()` → `ARTWORK, 0`.
 
@@ -213,7 +241,7 @@ There is no in-client test harness, so effort goes where it pays:
 
 | Phase | Contents |
 |---|---|
-| 0 | Repo, LICENSE (GPL-3.0), TOC, `Core`/`Compat`, SavedVariables, slash command. **First task: resolve `FogOfWarPinTemplate`** |
+| 0 | Repo, LICENSE (GPL-3.0), TOC, `Core`/`Compat`, SavedVariables, slash command. Includes the one-line in-game confirmation that `FogOfWarPinTemplate` has no active pins |
 | 1 | Generator + tests, `Data_Forever.lua`, fog provider. Colour set by slash command initially |
 | 2 | Options panel, scale, alpha, drag-to-move, position persistence |
 | 3 | Coords |
@@ -228,15 +256,12 @@ their time comes.
 
 ## 7. Open questions
 
-1. **`FogOfWarPinTemplate`.** Forever has this pin *in addition to*
-   `MapExplorationPinTemplate`; Retail does not. It is not yet known which pin paints the
-   fog the player sees, or whether both do. This is the only open item that could still
-   move the design, so it is Phase 0's first task.
-2. **`Settings` API surface.** The zero-dependency decision makes Blizzard's Settings
-   widgets load-bearing. A widened probe covering
-   `Settings.RegisterCanvasLayoutCategory`, `CreateSlider`, `CreateCheckbox` and
-   `ColorPickerFrame` is written but its results are not yet captured. If the widget set is
-   inadequate, `Options.lua` falls back to a hand-built canvas panel — contained to one file.
+1. ~~**`FogOfWarPinTemplate`.**~~ **Resolved** (see 2.3): the `UiMapFogOfWar` DB2 does not
+   exist in this build, so the pin is inert and the exploration overlay system is the only
+   fog on Forever. Phase 0 retains a one-line in-game confirmation
+   (`GetNumActive()` per pin pool should report `0`), but this no longer gates the design.
+2. ~~**`Settings` API surface.**~~ **Resolved** (see 2.4): the widget set is sufficient.
+   No hand-built canvas panel is needed.
 3. **UI panel extraction.** `UIPanelWindows["WorldMapFrame"]` is populated, and removing
    the map from the panel system is the tainty-est part of this addon. Try the clean route
    first (`UIPanelLayout-enabled` attribute plus `SetMovable`); escalate only if it misbehaves.
