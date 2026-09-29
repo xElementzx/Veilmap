@@ -47,6 +47,13 @@ All options live in Blizzard's own settings panel, with no extra libraries.
 
 ---
 
+## Known issues
+
+- **Settings reset on reload or login.** The WoW Forever client currently writes addon saved variables to disk but never loads them back. This affects every addon, not just Veilmap. Until it's fixed on the client side, your fog colour, map scale, map position and other settings go back to their defaults after a `/reload` or relog.
+- **The fog doesn't update while you're in combat.** Updating the map overlay mid-combat can trigger Blizzard's "action blocked" errors, so Veilmap holds off. If you open the map or change zones during combat, the fog catches up as soon as combat ends.
+
+---
+
 ## Reporting issues
 
 If a zone's fog looks wrong, open the map on that zone, run **`/vm verify`** and include the output with your report.
