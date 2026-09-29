@@ -1,6 +1,8 @@
 ## Interface: 16001
 ## Title: Veilmap
 ## Notes: Tinted fog of war, map scaling, transparency and coordinates.
+## Category: Map
+## IconTexture: Interface\AddOns\Veilmap\Textures\Icon
 ## Author: xElementzx
 ## Version: 1.0.0
 ## SavedVariables: VeilmapDB
