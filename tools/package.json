@@ -1,0 +1,12 @@
+{
+  "name": "veilmap-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "luaparse": "^0.3.1",
+    "wasmoon": "^1.16.0"
+  }
+}

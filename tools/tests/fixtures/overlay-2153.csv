@@ -1,0 +1,5 @@
+ID,UiMapArtID,TextureWidth,TextureHeight,OffsetX,OffsetY,HitRectTop,HitRectBottom,HitRectLeft,HitRectRight,PlayerConditionID,Flags,AreaID_0,AreaID_1,AreaID_2,AreaID_3
+5156,2153,256,249,577,419,495,565,615,735,0,4,62,0,0,0
+5157,2153,256,256,422,332,380,475,450,605,0,4,18,0,0,0
+5160,2153,256,341,124,327,445,645,200,300,0,4,60,0,0,0
+5999,2153,128,128,10,10,0,0,0,0,0,0,999,0,0,0

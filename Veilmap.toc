@@ -1,0 +1,18 @@
+## Interface: 16001
+## Title: Veilmap
+## Notes: Tinted fog of war, map scaling, transparency and coordinates.
+## Author: xElementzx
+## Version: 1.0.0
+## SavedVariables: VeilmapDB
+## X-License: GPL-3.0-or-later
+
+Compat.lua
+Config.lua
+Fog\Geometry.lua
+Fog\Data_Forever.lua
+Fog\FogPin.xml
+Fog\Provider.lua
+MapFrame.lua
+Coords.lua
+Options.lua
+Core.lua
