@@ -1,0 +1,6 @@
+package-as: Veilmap
+
+ignore:
+  - tools
+  - docs
+  - .luacheckrc

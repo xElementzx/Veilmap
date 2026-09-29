@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="500" viewBox="0 0 1600 500">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c1b2c"/><stop offset="0.6" stop-color="#1f4563"/><stop offset="1" stop-color="#2d5a7a"/>
+    </linearGradient>
+    <linearGradient id="parch" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1dca6"/><stop offset="1" stop-color="#c9a660"/>
+    </linearGradient>
+    <linearGradient id="fogG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff"/><stop offset="0.52" stop-color="#fff"/><stop offset="0.74" stop-color="#000"/>
+    </linearGradient>
+    <mask id="fogM"><rect width="1600" height="500" fill="url(#fogG)"/></mask>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="4"/>
+      <feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.25  0 0 0 0 0.1  0 0 0 0.3 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/></filter>
+    <filter id="mist" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.012" numOctaves="4" seed="11"/>
+      <feColorMatrix values="0 0 0 0 0.55  0 0 0 0 0.68  0 0 0 0 0.85  0 0 0 0.9 -0.25"/>
+    </filter>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="#fff6d0"/><stop offset="0.18" stop-color="#ffd76a" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#ffb52e" stop-opacity="0.35"/><stop offset="1" stop-color="#ff9d00" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#050b14" stop-opacity="0.75"/><stop offset="0.5" stop-color="#050b14" stop-opacity="0"/>
+    </linearGradient>
+    <g id="lands">
+      <path d="M-40 360 C60 330 120 380 220 350 C320 320 330 250 430 240 C520 232 560 300 640 290 C740 278 760 190 860 170 C960 150 1010 220 1100 200 C1200 178 1230 90 1340 80 C1440 72 1480 140 1560 130 L1660 120 L1660 560 L-40 560 Z"/>
+      <path d="M300 60 C360 30 450 50 460 100 C470 150 400 170 340 150 C280 130 250 90 300 60 Z"/>
+    </g>
+  </defs>
+  <rect width="1600" height="500" fill="url(#sea)"/>
+  <use href="#lands" fill="url(#parch)" stroke="#6b4a1f" stroke-width="5"/>
+  <use href="#lands" filter="url(#grain)"/>
+  <path d="M1180 330 C1230 300 1300 310 1330 350 C1360 392 1300 430 1240 420 C1180 410 1140 360 1180 330 Z" fill="#3a6a8a" stroke="#6b4a1f" stroke-width="5"/>
+  <g fill="none" stroke="#8a6630" stroke-width="3" stroke-linecap="round" opacity="0.5">
+    <path d="M1100 300 l18-34 18 34 M1150 280 l16-30 16 30 M1400 220 l18-34 18 34 M1440 240 l14-26 14 26"/>
+    <path d="M900 330 q60-40 130-16 t140-10"/><path d="M960 420 q80-30 170-4"/>
+    <path d="M400 400 q60-30 120-10"/>
+    <path d="M1260 150 c30 60 -20 120 20 190" stroke-dasharray="10 9"/>
+  </g>
+  <g mask="url(#fogM)">
+    <rect width="1600" height="500" fill="#1a3359" opacity="0.86"/>
+    <rect width="1600" height="500" filter="url(#mist)" opacity="0.6"/>
+  </g>
+  <rect width="1600" height="500" fill="url(#shade)"/>
+  <circle cx="1060" cy="235" r="330" fill="url(#glow)" opacity="0.45"/>
+  <g transform="translate(1060 235)">
+    <circle r="90" fill="url(#glow)"/>
+    <path d="M0-78 L12-12 L78 0 L12 12 L0 78 L-12 12 L-78 0 L-12-12 Z" fill="#fffbe8"/>
+    <circle r="13" fill="#fff"/>
+  </g>
+  <g font-family="Cinzel, 'Trajan Pro', Georgia, serif" fill="#f3dfa6">
+    <text x="110" y="250" font-size="132" font-weight="700" letter-spacing="10" stroke="#2a1d08" stroke-width="3" paint-order="stroke">VEILMAP</text>
+    <rect x="114" y="282" width="560" height="3" fill="#c9a14a"/>
+    <text x="114" y="336" font-size="34" letter-spacing="2" fill="#e8d7a8">See the fog of war. Don't lose the map.</text>
+    <text x="114" y="390" font-size="24" letter-spacing="3" fill="#a9bfd6" font-family="Cinzel, Georgia, serif">FOG TINT · MAP SCALE · TRANSPARENCY · COORDINATES</text>
+  </g>
+  <rect x="8" y="8" width="1584" height="484" fill="none" stroke="#c9a14a" stroke-width="6" rx="14"/>
+</svg>

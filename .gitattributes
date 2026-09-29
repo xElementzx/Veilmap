@@ -1,0 +1,8 @@
+# Dev-only files, kept out of the release zip (git archive)
+/tools          export-ignore
+/docs           export-ignore
+/.gitignore     export-ignore
+/.gitattributes export-ignore
+/.luacheckrc    export-ignore
+/.pkgmeta       export-ignore
+/media          export-ignore
