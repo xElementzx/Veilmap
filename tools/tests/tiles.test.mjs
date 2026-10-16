@@ -122,22 +122,3 @@ test('Tiles.Fade', async (t) => {
     assert.equal(r, '0,0.5,1,0,1');
   });
 });
-
-test('Tiles.ZoomScales', async (t) => {
-  const scales = (last, max) =>
-    run(`local s = Tiles.ZoomScales(${last}, ${max}) local o = {} for i, v in ipairs(s) do o[i] = string.format("%.2f", v) end return table.concat(o, ",")`);
-
-  await t.test('4x from 2.14 is 3.00, 4.00', async () => {
-    assert.equal(await scales(2.14, 4), '3.00,4.00');
-  });
-  await t.test('8x from 2.14 is 3.00, 4.19, 5.87, 8.00', async () => {
-    assert.equal(await scales(2.14, 8), '3.00,4.19,5.87,8.00');
-  });
-  await t.test('a max just above Blizzard adds only the max', async () => {
-    assert.equal(await scales(2.14, 2.5), '2.50');
-  });
-  await t.test('a max at or below Blizzard adds nothing', async () => {
-    assert.equal(await scales(2.14, 2.1), '');
-    assert.equal(await scales(2.14, 2.145), '');
-  });
-});

@@ -4,7 +4,7 @@ GPL-3.0-or-later. See LICENSE.
 
 Pure maths for the close-zoom detail layer: where each minimap tile sits on
 a zone map, which tiles are in view, how they are cropped at the map's
-edges, how strongly they show, and the extra zoom steps. No WoW API calls.
+edges, and how strongly they show. No WoW API calls.
 
 World coordinates: X runs north, Y runs west. Map coordinates (u, v) are
 0-1 across the map: u grows eastward (as Y falls), v southward (as X falls).
@@ -26,12 +26,6 @@ local GRID = 63 -- tile indices run 0..63
 
 -- Zoom (relative to fully zoomed out) where the detail starts and finishes fading in.
 local FADE_FROM, FADE_TO = 1, 2
--- Each appended zoom step is this much deeper than the last.
-local ZOOM_STEP = 1.4
--- A step closer than this to the max is replaced by the max itself.
-local ZOOM_SNAP = 0.05
--- The max must beat Blizzard's last level by this much to add anything.
-local ZOOM_MIN_GAIN = 0.01
 
 -- The map's world extents: X from minX (south) to maxX (north), Y from
 -- minY (east) to maxY (west).
@@ -78,22 +72,6 @@ function Tiles.Fade(relativeZoom)
 	local x = (relativeZoom - FADE_FROM) / (FADE_TO - FADE_FROM)
 	x = max(0, min(1, x))
 	return x * x * (3 - 2 * x)
-end
-
--- The relative scales to append after Blizzard's last zoom level, ending
--- exactly at maxRelative.
-function Tiles.ZoomScales(lastRelative, maxRelative)
-	local out = {}
-	if maxRelative <= lastRelative + ZOOM_MIN_GAIN then return out end
-	local scale = lastRelative
-	while true do
-		scale = scale * ZOOM_STEP
-		if scale >= maxRelative - ZOOM_SNAP then
-			out[#out + 1] = maxRelative
-			return out
-		end
-		out[#out + 1] = scale
-	end
 end
 
 return Tiles

@@ -14,7 +14,7 @@ read_globals = {
 	"ColorPickerFrame", "CreateFrame", "CreateFromMixins", "CreateTexturePool",
 	"CreateSettingsButtonInitializer", "CreateSettingsListSectionHeaderInitializer", "CreateVector2D",
 	"DeltaLerp", "Enum", "GameFontNormal", "GameTooltip", "GetBuildInfo", "GetCursorPosition",
-	"GetMouseFoci", "hooksecurefunc", "InCombatLockdown", "IsAltKeyDown", "IsPlayerMoving",
+	"GetMouseFoci", "InCombatLockdown", "IsAltKeyDown", "IsPlayerMoving",
 	"MapCanvasDataProviderMixin", "MapCanvasPinMixin",
 	"MinimalSliderWithSteppersMixin", "PLAYER", "PlayerMovementFrameFader",
 	"Settings", "UIParent", "UiMapPoint", "WorldMapFrame",

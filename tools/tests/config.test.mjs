@@ -59,8 +59,9 @@ test('Config.Merge', async (t) => {
   await t.test('phase 5 detail settings defaults', async () => {
     const result = await evalInLuaModule('Config.lua', `
       local m = Config.Merge(nil, Config.defaults)
-      return tostring(m.detailEnabled) .. "/" .. m.detailStrength .. "/" .. m.detailMaxZoom
+      return tostring(m.detailEnabled) .. "/" .. m.detailStrength .. "/" .. tostring(m.detailMaxZoom)
     `);
-    assert.equal(result, 'true/0.6/4');
+    // Deep zoom was dropped (it tainted Blizzard's map in combat): no detailMaxZoom.
+    assert.equal(result, 'true/0.6/nil');
   });
 });
