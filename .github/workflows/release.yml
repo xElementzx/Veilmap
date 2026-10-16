@@ -1,16 +1,14 @@
 # Veilmap - GPL-3.0-or-later
 #
-# Pushing a tag like v1.2.0 tests the addon, zips it, publishes a GitHub
-# release and uploads the zip to CurseForge.
+# Pushing a tag like v1.2.0 tests the addon, checks the tag matches the TOC
+# version, zips it and publishes a GitHub release.
 #
-# Repo settings this needs (Settings > Secrets and variables > Actions):
-#   secret   CF_API_TOKEN      CurseForge API token (curseforge.com > account > API tokens)
-#   variable CF_PROJECT_ID     the project's numeric ID (shown on its CurseForge page)
-#   variable CF_GAME_VERSIONS  comma-separated game version IDs; run the
-#                              "CurseForge game versions" workflow to find them
+# CurseForge is NOT uploaded from here: CurseForge's own automatic packaging
+# (a repo webhook) builds and publishes the CurseForge file from the same tag,
+# using .pkgmeta. Keep .pkgmeta's ignore list in step with .gitattributes'
+# export-ignore so both zips have the same contents.
 #
-# Tags containing "-alpha" or "-beta" upload as that release type and are
-# marked as pre-releases on GitHub.
+# Tags containing "-alpha" or "-beta" are marked as pre-releases.
 
 name: Release
 
@@ -88,41 +86,4 @@ jobs:
             gh release upload "$GITHUB_REF_NAME" "$zip" --clobber
           else
             gh release create "$GITHUB_REF_NAME" "$zip" --title "Veilmap ${{ steps.version.outputs.version }}" --notes-file CHANGELOG.md $prerelease
-          fi
-
-      - name: Upload to CurseForge
-        env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_PROJECT_ID: ${{ vars.CF_PROJECT_ID }}
-          CF_GAME_VERSIONS: ${{ vars.CF_GAME_VERSIONS }}
-          VERSION: ${{ steps.version.outputs.version }}
-          RELEASE_TYPE: ${{ steps.version.outputs.type }}
-        run: |
-          for name in CF_API_TOKEN CF_PROJECT_ID CF_GAME_VERSIONS; do
-            if [ -z "${!name}" ]; then
-              echo "::error::$name is not set in the repo's Actions secrets/variables"
-              exit 1
-            fi
-          done
-          jq -n \
-            --rawfile changelog CHANGELOG.md \
-            --arg name "Veilmap $VERSION" \
-            --arg type "$RELEASE_TYPE" \
-            --arg versions "$CF_GAME_VERSIONS" \
-            '{changelog: $changelog, changelogType: "markdown", displayName: $name,
-              releaseType: $type,
-              gameVersions: ($versions | split(",") | map(gsub("\\s"; "") | tonumber))}' \
-            > metadata.json
-          cat metadata.json
-          # "<file" sends the file's text as the field value, so nothing in the
-          # changelog can be read as a curl -F option.
-          status=$(curl -sS -o response.json -w '%{http_code}' \
-            -H "X-Api-Token: $CF_API_TOKEN" \
-            -F "metadata=<metadata.json" \
-            -F "file=@Veilmap-$VERSION.zip" \
-            "https://wow.curseforge.com/api/projects/$CF_PROJECT_ID/upload-file")
-          cat response.json; echo
-          if [ "$status" != 200 ]; then
-            echo "::error::CurseForge upload failed with HTTP $status"
-            exit 1
           fi
