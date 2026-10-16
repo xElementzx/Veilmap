@@ -120,6 +120,20 @@ function Areas.Summary(count)
 	return "Unexplored: " .. count .. " areas"
 end
 
+-- Whether a 0-1 map position lies on the map. C_Map.GetPlayerMapPosition
+-- projects the player onto neighbouring zones of the same continent, so a
+-- non-nil position alone does not mean the player is on the displayed map.
+function Areas.OnMap(x, y)
+	return x >= 0 and x <= 1 and y >= 0 and y <= 1
+end
+
+-- Whether a press from (downX, downY) to (upX, upY), in screen pixels, was a
+-- click rather than the end of a pan drag.
+local CLICK_SLOP = 4
+function Areas.IsClick(downX, downY, upX, upY)
+	return abs(upX - downX) <= CLICK_SLOP and abs(upY - downY) <= CLICK_SLOP
+end
+
 function Areas.PointMatches(ax, ay, bx, by)
 	return abs(ax - bx) <= POINT_TOLERANCE and abs(ay - by) <= POINT_TOLERANCE
 end

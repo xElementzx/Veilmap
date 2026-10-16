@@ -23,6 +23,9 @@ Chat lines must stay under 255 characters; the `/run` lines below do.
 | 15 | Toggle both new options off and on in `/vm` | Tooltips and the list disappear and return without `/reload`. |
 | 16 | Tab arrow textures | Arrows render (not green squares). |
 | 17 | Explore a new area with the map open | The fog patch disappears and the list updates without reopening the map. |
+| 18 | Alt-click a fog patch that sits over a city or child-map highlight (e.g. Orgrimmar in Durotar) | Either Blizzard navigates into the city and no waypoint is set, or the waypoint lands on the patch. Never a waypoint somewhere else. |
+| 19 | Alt + drag to pan the map, releasing over a fog patch | No waypoint is set. |
+| 20 | Browse a neighbouring zone on the same continent | List is alphabetical, not by distance. |
 
 Useful one-liners:
 

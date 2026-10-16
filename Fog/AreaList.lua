@@ -22,6 +22,9 @@ local TAB_SIZE = 24
 local DOCK_Y = -30
 -- Rows to scroll per mouse-wheel notch.
 local WHEEL_ROWS = 3
+-- Frame levels above the map canvas, clearing the pins the pin frame-level
+-- manager stacks on it.
+local CANVAS_CLEARANCE = 100
 
 local NEXT_PAGE = "Interface\\Buttons\\UI-SpellbookIcon-NextPage-"
 local PREV_PAGE = "Interface\\Buttons\\UI-SpellbookIcon-PrevPage-"
@@ -34,6 +37,13 @@ local rows = {}
 local function anchor()
 	tab:ClearAllPoints()
 	panel:ClearAllPoints()
+	-- Created as children of WorldMapFrame, both sit below the canvas and its
+	-- pins. That is invisible outside the map, but docked inside it they would
+	-- be drawn under the map and lose their clicks.
+	local level = WorldMapFrame.ScrollContainer:GetFrameLevel() + CANVAS_CLEARANCE
+	tab:SetFrameLevel(level)
+	panel:SetFrameLevel(level)
+
 	if WorldMapFrame:IsMaximized() then
 		tab:SetPoint("TOPRIGHT", WorldMapFrame.ScrollContainer, "TOPRIGHT", -4, -4)
 		panel:SetPoint("TOPRIGHT", tab, "TOPLEFT", -2, 0)
@@ -108,7 +118,10 @@ local function fill(current)
 	local position = C_Map.GetPlayerMapPosition(current.mapID, "player")
 	if position then
 		local x, y = position:GetXY()
-		player = { x = x, y = y }
+		-- A neighbouring zone gets a projected, off-map position: alphabetical then.
+		if Areas.OnMap(x, y) then
+			player = { x = x, y = y }
+		end
 	end
 	Areas.Sort(groups, names, player, current.layerWidth, current.layerHeight)
 

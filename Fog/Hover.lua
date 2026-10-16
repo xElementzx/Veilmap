@@ -54,26 +54,48 @@ local function setHovered(entry)
 	if entry then showTooltip(entry) else hideTooltip() end
 end
 
+-- The unexplored entry under the cursor right now, and the published set it
+-- came from; nil when there is none.
+local function entryUnderCursor()
+	local current = Veilmap.FogProvider:GetUnexplored()
+	if not current or not overCanvas() then return end
+	local fx, fy = Veilmap.Coords.CursorFraction()
+	if not fx then return end
+	return Areas.HitTest(current.unexplored, fx * current.layerWidth, fy * current.layerHeight), current
+end
+
 local function onUpdate(_, delta)
 	elapsedSince = elapsedSince + delta
 	if elapsedSince < THROTTLE then return end
 	elapsedSince = 0
+	setHovered((entryUnderCursor()))
+end
 
-	local entry
-	local current = Veilmap.FogProvider:GetUnexplored()
-	if current and overCanvas() then
-		local fx, fy = Veilmap.Coords.CursorFraction()
-		if fx then
-			entry = Areas.HitTest(current.unexplored, fx * current.layerWidth, fy * current.layerHeight)
-		end
-	end
-	setHovered(entry)
+-- What was under the cursor when the left button went down. Captured on
+-- mouse down because Blizzard's own OnMouseUp runs before our hook and can
+-- navigate into a child map (a city inside a zone), after which both the
+-- published set and the throttled hovered entry describe the wrong map.
+local pressed
+
+local function onMouseDown(_, button)
+	pressed = nil
+	if button ~= "LeftButton" or not Veilmap.db.areaTooltips then return end
+	local entry, current = entryUnderCursor()
+	if not entry then return end
+	local x, y = GetCursorPosition()
+	pressed = { entry = entry, mapID = current.mapID, x = x, y = y }
 end
 
 local function onMouseUp(_, button)
-	if button ~= "LeftButton" or not IsAltKeyDown() then return end
-	if not hovered or not Veilmap.db.areaTooltips then return end
-	Veilmap.Waypoint.Set(hovered)
+	local press = pressed
+	pressed = nil
+	if not press or button ~= "LeftButton" or not IsAltKeyDown() then return end
+	-- Blizzard navigated away on this click: the patch is no longer on screen.
+	if WorldMapFrame:GetMapID() ~= press.mapID then return end
+	-- The press ended a pan drag, not a click.
+	local x, y = GetCursorPosition()
+	if not Areas.IsClick(press.x, press.y, x, y) then return end
+	Veilmap.Waypoint.Set(press.entry)
 end
 
 function Hover.Refresh()
@@ -93,8 +115,9 @@ function Hover.Initialise()
 	frame = CreateFrame("Frame", nil, WorldMapFrame)
 	frame:SetScript("OnHide", function() setHovered(nil) end)
 
-	-- HookScript appends to the scroll container's handler; Blizzard's own
+	-- HookScript appends to the scroll container's handlers; Blizzard's own
 	-- click handling still runs first and unchanged.
+	WorldMapFrame.ScrollContainer:HookScript("OnMouseDown", onMouseDown)
 	WorldMapFrame.ScrollContainer:HookScript("OnMouseUp", onMouseUp)
 
 	Hover.Refresh()

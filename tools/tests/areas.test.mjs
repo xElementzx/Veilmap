@@ -185,6 +185,28 @@ test('Areas.Summary', async (t) => {
   });
 });
 
+test('Areas.OnMap', async (t) => {
+  // C_Map.GetPlayerMapPosition projects the player onto neighbouring zones of
+  // the same continent, giving coordinates outside 0-1. Those must not count.
+  await t.test('a position inside the map counts, edges included', async () => {
+    assert.equal(await run('return (Areas.OnMap(0.5, 0.5) and Areas.OnMap(0, 1) and Areas.OnMap(1, 0)) and "y" or "n"'), 'y');
+  });
+  await t.test('a projected position outside 0-1 does not count', async () => {
+    assert.equal(await run('return (Areas.OnMap(1.2, 0.5) or Areas.OnMap(0.5, -0.1)) and "y" or "n"'), 'n');
+  });
+});
+
+test('Areas.IsClick', async (t) => {
+  // Cursor positions in screen pixels at mouse down and mouse up. A press that
+  // moved further than a few pixels was a pan drag, not a click.
+  await t.test('a press that barely moved is a click', async () => {
+    assert.equal(await run('return Areas.IsClick(100, 100, 102, 99) and "y" or "n"'), 'y');
+  });
+  await t.test('a press that moved several pixels is a drag', async () => {
+    assert.equal(await run('return Areas.IsClick(100, 100, 108, 100) and "y" or "n"'), 'n');
+  });
+});
+
 test('Areas.PointMatches', async (t) => {
   await t.test('identical points match', async () => {
     assert.equal(await run('return Areas.PointMatches(0.25, 0.5, 0.25, 0.5) and "y" or "n"'), 'y');
