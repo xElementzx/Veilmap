@@ -1,4 +1,0 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/">
-	<!-- Veilmap - GPL-3.0-or-later -->
-	<Frame name="VeilmapDetailPinTemplate" mixin="VeilmapDetailPinMixin" virtual="true"/>
-</Ui>

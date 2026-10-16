@@ -5,7 +5,7 @@ exclude_files = { "tools/node_modules", "Fog/Data_Forever.lua", "Fog/Targets_For
 -- Globals Veilmap defines or mutates. SlashCmdList is here, not in
 -- read_globals, because Core.lua assigns a field on it.
 globals = {
-	"VeilmapDB", "VeilmapFogData", "VeilmapAreaTargets", "VeilmapMinimapTiles", "VeilmapFogPinMixin", "VeilmapDetailPinMixin",
+	"VeilmapDB", "VeilmapFogData", "VeilmapAreaTargets", "VeilmapMinimapTiles", "VeilmapFogPinMixin",
 	"SLASH_VEILMAP1", "SLASH_VEILMAP2", "SlashCmdList",
 }
 

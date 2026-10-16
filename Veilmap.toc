@@ -21,7 +21,6 @@ Fog\Hover.lua
 Fog\AreaList.lua
 Detail\Tiles.lua
 Detail\Data_Minimap_Forever.lua
-Detail\DetailPin.xml
 Detail\Provider.lua
 MapFrame.lua
 Coords.lua

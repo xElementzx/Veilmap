@@ -26,8 +26,8 @@ Built for **WoW Forever**.
 - Each feature has its own toggle in the settings.
 
 ### Close-zoom detail
-- **Zoom further** into zone and city maps than the game normally allows: up to 8x, set in the options (default 4x).
-- As you zoom in, the game's own **minimap terrain fades in** under the map: roads, tree cover, buildings and rocks. Zoomed right out, the map looks exactly as it always did.
+- As you zoom into a zone or city map, the game's own **minimap terrain fades in** under the map: roads, tree cover, buildings and rocks. Zoomed right out, the map looks exactly as it always did.
+- Works in combat, including on a map you open or change mid-fight.
 - Choose how strongly the terrain shows, or turn the whole feature off.
 - The fog tint stays on top, so unexplored areas still stand out.
 
