@@ -55,7 +55,7 @@ end
 -- Shows the tiles in range at alpha, releases the rest.
 function VeilmapDetailPinMixin:ShowTiles(state, tx0, tx1, ty0, ty1, alpha)
 	local canvas = self:GetMap()
-	local width, height = self:GetWidth(), self:GetHeight()
+	local width, height = state.width, state.height
 	local wanted = {}
 
 	for tx = tx0, tx1 do
@@ -139,6 +139,11 @@ function Provider:RefreshAllData()
 	-- Acquiring a pin reaches protected code in combat (see Fog/Provider.lua).
 	if InCombatLockdown() then
 		self.refreshPending = true
+		-- This refresh is usually a map change: the old map's tiles and
+		-- placement must not carry over onto the new one. Releasing textures
+		-- is plain texture work, safe in combat.
+		if self.pin then self.pin:HideTiles() end
+		self.state = nil
 		return
 	end
 	self:RemoveAllData()
@@ -164,14 +169,22 @@ function Provider:RefreshAllData()
 	local tiles = continent and VeilmapMinimapTiles and VeilmapMinimapTiles[continent]
 	if not tiles then return end
 
-	self.state = {
-		transform = Tiles.Transform(math.min(x0, x1), math.min(y0, y1), math.max(x0, x1), math.max(y0, y1)),
-		tiles = tiles,
-	}
-
 	local drawOk, drawErr = pcall(function()
+		-- The canvas child is sized explicitly to the map art (SetCanvasSize),
+		-- so this is reliable even before the pin has been laid out.
+		local width, height = canvas:GetCanvas():GetSize()
+		self.state = {
+			mapID = mapID,
+			transform = Tiles.Transform(math.min(x0, x1), math.min(y0, y1), math.max(x0, x1), math.max(y0, y1)),
+			tiles = tiles,
+			width = width,
+			height = height,
+		}
 		local pin = canvas:AcquirePin("VeilmapDetailPinTemplate")
 		pin:SetAllPoints(canvas:GetCanvas())
+		-- Blizzard only applies a pin's level when positioning it by point
+		-- (SetPosition); a canvas-spanning pin has to apply its own.
+		pin:ApplyFrameLevel()
 		self.pin = pin
 	end)
 	if not drawOk then
@@ -186,6 +199,10 @@ function Provider:UpdateView()
 	if not pin or not state or not db then return end
 
 	local canvas = self:GetMap()
+	if canvas:GetMapID() ~= state.mapID then
+		pin:HideTiles()
+		return
+	end
 	local container = canvas.ScrollContainer
 	local alpha = db.detailStrength * Tiles.Fade(canvas:GetCanvasScale() / container:GetScaleForMinZoom())
 	if alpha < MIN_ALPHA then

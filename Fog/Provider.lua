@@ -20,13 +20,14 @@ VeilmapFogPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
 function VeilmapFogPinMixin:OnLoad()
 	self:SetIgnoreGlobalPinScale(true)
-	if self.UseFrameLevelType then
-		-- Above the close-zoom detail layer (EVENT_OVERLAY), which sits above
-		-- Blizzard's explored overlays (MAP_EXPLORATION). FOG_OF_WAR is unused
-		-- on Forever. A canvas without it keeps the fog where it always was.
-		local level = Veilmap.Detail.HasFrameLevel(self:GetMap(), "PIN_FRAME_LEVEL_FOG_OF_WAR")
-			and "PIN_FRAME_LEVEL_FOG_OF_WAR" or "PIN_FRAME_LEVEL_MAP_EXPLORATION"
-		self:UseFrameLevelType(level)
+	-- Above the close-zoom detail layer (EVENT_OVERLAY), which sits above
+	-- Blizzard's explored overlays (MAP_EXPLORATION). FOG_OF_WAR is unused on
+	-- Forever. A canvas without it keeps the pool's default level, as the fog
+	-- always had: UseFrameLevelType alone sets nothing, the level only lands
+	-- through ApplyFrameLevel (see Rebuild).
+	if Veilmap.Detail.HasFrameLevel(self:GetMap(), "PIN_FRAME_LEVEL_FOG_OF_WAR") then
+		self:UseFrameLevelType("PIN_FRAME_LEVEL_FOG_OF_WAR")
+		self.hasFrameLevel = true
 	end
 	self.texturePool = CreateTexturePool(self, "ARTWORK", -1)
 end
@@ -261,6 +262,9 @@ function FogProviderMixin:Rebuild()
 	local color = db.fogColor
 	local drawOk, drawErr = pcall(function()
 		local pin = self:GetMap():AcquirePin("VeilmapFogPinTemplate")
+		-- Blizzard only applies a pin's level when positioning it by point
+		-- (SetPosition); a canvas-spanning pin has to apply its own.
+		if pin.hasFrameLevel then pin:ApplyFrameLevel() end
 		pin:Draw(unexplored, layerInfo, color.r, color.g, color.b, color.a)
 		self.pin = pin
 	end)

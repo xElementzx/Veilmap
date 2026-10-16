@@ -17,7 +17,7 @@ Chat lines must stay under 255 characters; the `/run` lines below do.
 | 9 | Set Deepest zoom to 8x, change zone and back | The new zone zooms to 8x (one-liner B ends `8.00`). At 2x: Blizzard's normal zoom (ends `2.14`). |
 | 10 | Untick Close-zoom detail | Terrain disappears at once; after a map change the zoom is back to 2.14x. |
 | 11 | Maximize and restore the map while zoomed in | Zoom levels and terrain stay correct (one-liner B still ends at the slider value). |
-| 12 | **Combat (default):** in combat, wheel-zoom; change zones with the map open; open the map; maximize it; click quest and flight pins while deep-zoomed | No "Interface action failed because of an AddOn" message and no Lua errors. A map changed during combat may stop at 2.14x until the next map change; that's expected. |
+| 12 | **Combat (default):** in combat, wheel-zoom; change zones with the map open; open the map; maximize it; click quest and flight pins while zoomed to 3-4x (the added levels, not just 2.14x) | No "Interface action failed because of an AddOn" message and no Lua errors. A map changed during combat may stop at 2.14x until the next map change; that's expected. |
 | 13 | **Combat (debug):** type `/vm debug combatzoom` (prints ON), then repeat 12 several times, especially changing zones with the map open in combat | Report the result. Clean means the combat limit gets lifted before release; any "action blocked" means it stays. |
 
 One-liners:

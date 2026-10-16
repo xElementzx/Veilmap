@@ -39,8 +39,13 @@ local function anchor()
 	panel:ClearAllPoints()
 	-- Created as children of WorldMapFrame, both sit below the canvas and its
 	-- pins. That is invisible outside the map, but docked inside it they would
-	-- be drawn under the map and lose their clicks.
+	-- be drawn under the map and lose their clicks. Pins (fog included) take
+	-- absolute levels from 2000 up, so clear the highest one the map defines.
 	local level = WorldMapFrame.ScrollContainer:GetFrameLevel() + CANVAS_CLEARANCE
+	local manager = WorldMapFrame.GetPinFrameLevelsManager and WorldMapFrame:GetPinFrameLevelsManager()
+	if manager and manager.maxLevel then
+		level = math.max(level, manager.maxLevel + CANVAS_CLEARANCE)
+	end
 	tab:SetFrameLevel(level)
 	panel:SetFrameLevel(level)
 
