@@ -274,3 +274,53 @@ never guard Veilmap's own logic.
 - `Detail/` ships with the addon, so neither `.pkgmeta` nor `.gitattributes` changes.
 - Merge to `main` and tag `v1.2.0` only after the in-game checklist passes. CurseForge's
   webhook and the GitHub workflow then release it.
+
+## 12. Amendment (2026-10-16): deep zoom dropped; detail layer is a plain frame
+
+### 12.1 Finding (in game)
+
+Scrolling the map in combat, and opening it in combat, gave "Interface action failed because of
+an AddOn". The taint log:
+- The blocked call is `Button:SetPassThroughButtons()`, inside `AcquirePin` for Blizzard's
+  quest pins (`QuestDataProvider:AddQuest`), on `ToggleWorldMap` → `RefreshAll`.
+- The taint source is "Execution tainted by Veilmap while reading field `targetScrollY`"
+  (`MapCanvas_ScrollContainerMixin.lua:445`, `MarkCanvasDirty`).
+
+The deep-zoom hook appends Veilmap's values to the scroll container's `zoomLevels` *outside*
+combat. Blizzard's code reads them in the same call and from then on writes tainted
+scroll state (`targetScale`, `targetScrollX/Y`). Every later secure path that reads that state
+in combat, such as opening the map or refreshing pins, is blocked. Skipping the hook in combat
+cannot help, because the taint is created out of combat. Zoom limits come from game data, so
+there is no taint-free way to extend them. OpenMap writes the same state and accepts the risk.
+
+Separately: a data provider that acquires a pin must defer in combat. That is why the detail
+layer, like the fog, didn't appear on a map opened or changed in combat.
+
+### 12.2 Changes
+
+1. **Deep zoom is removed:** `Detail/Zoom.lua`, the `detailMaxZoom` setting and slider,
+   `Tiles.ZoomScales` and its tests, and `/vm debug combatzoom`. Sections 6 and 8's zoom
+   rows, and in-game checks 2, 9, 12 (zoom parts) and 13, no longer apply.
+2. **The detail layer is a plain frame, not a pin.**
+   - `Detail.Initialise` creates one frame, out of combat at login, as a child of
+     `WorldMapFrame:GetCanvas()`. It spans the canvas, at frame level
+     `manager:GetValidFrameLevel("PIN_FRAME_LEVEL_EVENT_OVERLAY")`. That is a read, with no
+     write into Blizzard state.
+   - `MAX_TILES` (150) textures are pre-created in that frame and registered once with
+     `canvas:AddMaskableTexture`, also out of combat. In combat, Veilmap only sets textures,
+     points, sizes, texture coordinates, alpha and visibility on its own textures.
+   - The data provider remains, only for its callbacks (`RefreshAllData` on map change, and
+     the pan/zoom/size callbacks). It never acquires a pin, so **nothing defers in combat**.
+     The detail works on maps opened or changed during combat.
+   - If the canvas has no `EVENT_OVERLAY` level, the layer isn't created and one chat message
+     says so.
+3. **The fade is unchanged:** 0 at 1×, full at 2×, with Blizzard's maximum of 2.14×.
+4. **Settings:** `detailEnabled` and `detailStrength` only.
+
+### 12.3 In-game checks (replacing 2, 9, 12, 13)
+
+- Open the map **in combat** on a zone, zoom to 2×: terrain shows, with no "action blocked"
+  and no new Veilmap lines in the taint log (`/console taintLog 1`).
+- Change zones in combat with the map open, zoomed: terrain is correct on the new map.
+- Click quest and flight pins in combat while zoomed: no "action blocked".
+- One-liner B ends at `2.14` (Blizzard's normal zoom).
