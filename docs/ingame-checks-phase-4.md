@@ -29,7 +29,7 @@ Chat lines must stay under 255 characters; the `/run` lines below do.
 | 21 | Alt-click Jerod's Landing (Elwynn), walk to the waypoint | The waypoint sits on the small dock rock, not the middle of the patch. Standing on it discovers Jerod's Landing. |
 | 22 | Repeat 21 for three small subzones in other zones (e.g. a Westfall farm, a Durotar camp) | Standing on the waypoint discovers each one. |
 | 23 | Click a list row for an area whose patch spans more than one area | The waypoint is on that row's area, and the chat message names only that area. |
-| 24 | Waypoint conversion sanity: `/run local _,p=C_Map.GetMapPosFromWorldPos(0,CreateVector2D(-9440,-40),C_Map.GetBestMapForUnit("player")) print(p and p:GetXY())` while in Elwynn | Prints roughly 0.42, 0.65 (Goldshire). |
+| 24 | Waypoint conversion sanity: `/run local m,p=C_Map.GetMapPosFromWorldPos(0,CreateVector2D(-9440,-40),C_Map.GetBestMapForUnit("player")) print(m, p:GetXY())` while in Elwynn | Prints the map ID, then roughly 0.45 and 0.6-0.66 (Goldshire), close to Veilmap's cursor coordinates over Goldshire's inn. |
 
 Useful one-liners:
 
