@@ -276,3 +276,80 @@ never wrapped and fails loudly.
 
 Phase 5 is now the **close-zoom map detail** toggle (the game's minimap tiles blended in at
 deep zoom, inspired by OpenMap). Retail moves to phase 6. Each gets its own spec and plan.
+
+## 12. Amendment (2026-10-16): terrain-accurate waypoint targets
+
+### 12.1 Problem (found in-game)
+
+Waypoints aimed at the hit-rect centre do not reliably discover the area. Discovery is
+triggered by the **area ID stamped on the terrain** (one per 33⅓-yard map chunk), not by the
+overlay art. For Jerod's Landing the trigger ground is a small rock, a fraction of the painted
+patch, and the hit-rect centre lies on ground that belongs to Elwynn Forest itself. The fog
+patch did clear once the player found the rock, so detection and clean-up are fine; only the
+target is wrong.
+
+### 12.2 Evidence
+
+- Root ADT tiles for build 1.60.1.69913 are on wago.tools (`world/maps/azeroth/azeroth_X_Y.adt`,
+  388 on Eastern Kingdoms) and download through `api/casc/<fileDataID>?download&version=<build>`.
+- Each `MCNK` chunk header holds the chunk's area ID at offset `0x34`. Sample from
+  `azeroth_32_49`: Goldshire (87) is 16 chunks, Crystal Lake (18) is 133. These are the same
+  AreaTable IDs the fog data uses.
+- Chunk world position follows `worldX = 32·T − tileY·T − iy·C`, `worldY = 32·T − tileX·T − ix·C`
+  (top-left corner; `T = 1600/3`, `C = T/16`; tile file name is `map_<tileX>_<tileY>`). This
+  matches the header's stored position to within 0.002 yards on 512 chunks. Goldshire's chunk
+  centroid comes out at world (−9440, −40), which is correct.
+
+### 12.3 Design
+
+**Generator (offline).**
+- A new step in `tools/` fetches every root ADT for continents `azeroth` (MapID 0) and
+  `kalimdor` (MapID 1), using the same wago file listing. Downloads are cached outside the repo
+  (like OpenMap's caches) and are resumable, because the full set is roughly 900 files and
+  ~450 MB.
+- For every area ID that appears in `Data_Forever.lua`, it collects the centres of the chunks
+  carrying that ID.
+- It keeps at most **8 sample points per area**, using deterministic farthest-point sampling
+  that starts from the chunk nearest the area's centroid. This spreads the samples over the
+  area, so a far-flung patch still has a nearby target.
+- It emits `Fog/Targets_Forever.lua`:
+
+  ```lua
+  VeilmapAreaTargets = {
+  	[areaID] = { continentID, x1, y1, x2, y2, ... },  -- world yards, chunk centres
+  }
+  ```
+
+- It reports how many fog area IDs have **no** terrain chunks. These are expected for
+  areas that exist only inside buildings or caves (WMO areas).
+
+**Addon.**
+- Waypoint targeting goes through one function in `Waypoint.lua`:
+  `TargetFor(entries, mapID, fallbackX, fallbackY)`.
+  - It gathers the sample points of every area ID across `entries`. An overlay is revealed by
+    any of its areas, so for an Alt-click the candidates are the union over the clicked
+    entry's area IDs; for a list row, the group's area.
+  - It converts each point with `C_Map.GetMapPosFromWorldPos(continentID, CreateVector2D(x, y), mapID)`.
+  - It keeps the points that land on `mapID` within 0–1, and picks the one nearest (in layer
+    pixels) to the clicked patch's hit-rect centre. For a list row, it picks the one nearest the
+    group's `largest` patch.
+  - If there are no usable points, it falls back to the hit-rect centre (today's behaviour).
+- The nearest-point choice is a pure function in `Areas.lua`:
+  `Areas.Nearest(points, x, y, layerW, layerH)`, unit-tested.
+- Tooltips, the list, highlighting and clear-on-discovery are unchanged. Clearing still keys on
+  the clicked overlay's explored state.
+
+### 12.4 Testing
+
+- **Unit tests:**
+  - The ADT chunk parser and world-position formula, against a small committed fixture: a
+    trimmed real tile containing only the `MCNK` headers.
+  - Farthest-point sampling: deterministic, capped at 8, and always including the
+    centroid-nearest chunk.
+  - The emitted Lua shape.
+  - `Areas.Nearest`.
+- **In-game checklist additions:**
+  - Jerod's Landing: the waypoint lands on the trigger rock, and standing there discovers it.
+  - Three or more other small subzones in different zones discover when the player stands on
+    the waypoint.
+  - An area with no terrain target still gets a waypoint (fallback).
