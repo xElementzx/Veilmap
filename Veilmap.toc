@@ -19,6 +19,7 @@ Fog\Provider.lua
 Fog\Waypoint.lua
 Fog\Hover.lua
 Fog\AreaList.lua
+Detail\Data_Minimap_Forever.lua
 MapFrame.lua
 Coords.lua
 Options.lua
