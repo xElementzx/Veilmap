@@ -18,6 +18,13 @@ Built for **WoW Forever**.
 - Works on the **World Map**, and optionally the **Battlefield Map** (Shift+M), each with its own toggle.
 - Ships with fog data for **84 maps / 1,073 overlays**.
 
+### Hunt down unexplored areas
+- **Hover** a fogged patch on the World Map to see the name of the area it hides.
+- **Alt-click** a patch to set a tracked waypoint to it, with the on-screen arrow and distance.
+- An **unexplored areas list** beside the map shows what's left in the zone, nearest first. Click an area to set a waypoint, or hover it to highlight it on the map.
+- When you discover the area, Veilmap **clears the waypoint** for you. A pin you placed yourself is never touched.
+- Each feature has its own toggle in the settings.
+
 ### Movable, scalable map
 - **Drag** the World Map anywhere on screen. Veilmap remembers where you put it.
 - **Scale** the map from 50% to 200%.
