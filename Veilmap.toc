@@ -15,6 +15,7 @@ Fog\Areas.lua
 Fog\Data_Forever.lua
 Fog\FogPin.xml
 Fog\Provider.lua
+Fog\Waypoint.lua
 MapFrame.lua
 Coords.lua
 Options.lua
