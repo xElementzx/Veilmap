@@ -55,6 +55,9 @@ local function targetFor(areaIDs, mapID, entry, layerW, layerH)
 			for j = 2, #t - 1, 2 do
 				local ok, uiMapID, position = pcall(C_Map.GetMapPosFromWorldPos,
 					continent, CreateVector2D(t[j], t[j + 1]), mapID)
+				-- A failing conversion would silently bring back the map-art
+				-- targets this exists to replace, so say so (once).
+				if not ok then reportError(uiMapID) end
 				if ok and uiMapID == mapID and position then
 					local x, y = position:GetXY()
 					if Areas.OnMap(x, y) then

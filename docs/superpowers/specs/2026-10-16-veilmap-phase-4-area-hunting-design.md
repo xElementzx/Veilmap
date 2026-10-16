@@ -291,7 +291,8 @@ target is wrong.
 ### 12.2 Evidence
 
 - Root ADT tiles for build 1.60.1.69913 are on wago.tools (`world/maps/azeroth/azeroth_X_Y.adt`,
-  388 on Eastern Kingdoms) and download through `api/casc/<fileDataID>?download&version=<build>`.
+  736 on Eastern Kingdoms and 988 on Kalimdor; the 388 first quoted here was a partial
+  search) and download through `api/casc/<fileDataID>?download&version=<build>`.
 - Each `MCNK` chunk header holds the chunk's area ID at offset `0x34`. Sample from
   `azeroth_32_49`: Goldshire (87) is 16 chunks, Crystal Lake (18) is 133. These are the same
   AreaTable IDs the fog data uses.
