@@ -47,8 +47,10 @@ function VeilmapDetailPinMixin:OnLoad()
 	self.shown = {}
 end
 
+-- Blizzard's pool resets a newly created pin (calling this) before
+-- AcquirePin runs OnLoad, so the texture pool may not exist yet.
 function VeilmapDetailPinMixin:OnReleased()
-	self.texturePool:ReleaseAll()
+	if self.texturePool then self.texturePool:ReleaseAll() end
 	self.shown = {}
 end
 
