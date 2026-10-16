@@ -3,6 +3,28 @@
 
 const num = (v) => Number(v ?? 0);
 
+const AREA_COLUMNS = ['AreaID_0', 'AreaID_1', 'AreaID_2', 'AreaID_3'];
+
+// Every non-zero area the overlay covers, in column order. AreaID_0 is
+// non-zero on every Forever row, so this is never empty in practice.
+function areaIDsOf(overlay) {
+  return AREA_COLUMNS.map((c) => num(overlay[c])).filter((id) => id !== 0);
+}
+
+// [left, top, right, bottom] in map-art pixels. Rows whose hit rect is all
+// zeros fall back to the overlay's own bounds, so the Lua side never needs a
+// fallback of its own.
+function hitRectOf(overlay, width, height, offsetX, offsetY) {
+  const rect = [
+    num(overlay.HitRectLeft),
+    num(overlay.HitRectTop),
+    num(overlay.HitRectRight),
+    num(overlay.HitRectBottom),
+  ];
+  if (rect.every((v) => v === 0)) return [offsetX, offsetY, offsetX + width, offsetY + height];
+  return rect;
+}
+
 export function buildDataset(overlayRows, tileRows) {
   const tilesByOverlay = new Map();
   for (const tile of tileRows) {
@@ -26,13 +48,18 @@ export function buildDataset(overlayRows, tileRows) {
     let entries = byArt.get(art);
     if (!entries) byArt.set(art, (entries = []));
 
+    const width = num(overlay.TextureWidth);
+    const height = num(overlay.TextureHeight);
+    const offsetX = num(overlay.OffsetX);
+    const offsetY = num(overlay.OffsetY);
     entries.push({
-      width: num(overlay.TextureWidth),
-      height: num(overlay.TextureHeight),
-      offsetX: num(overlay.OffsetX),
-      offsetY: num(overlay.OffsetY),
-      areaID: num(overlay.AreaID_0),
+      width,
+      height,
+      offsetX,
+      offsetY,
+      areaIDs: areaIDsOf(overlay),
       fileDataIDs: tiles.map((t) => num(t.FileDataID)),
+      hitRect: hitRectOf(overlay, width, height, offsetX, offsetY),
     });
   }
 

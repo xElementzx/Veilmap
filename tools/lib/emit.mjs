@@ -23,7 +23,7 @@ export function emitLua(dataset, meta) {
   out.push('Regenerate with:');
   out.push(`  node tools/genfogdata.mjs --build ${meta.build} --out Fog/Data_Forever.lua`);
   out.push('');
-  out.push('[UiMapArtID] = { {width, height, offsetX, offsetY, areaID, "fileDataIDs"}, ... }');
+  out.push('[UiMapArtID] = { {width, height, offsetX, offsetY, {areaIDs}, "fileDataIDs", {hitLeft, hitTop, hitRight, hitBottom}}, ... }');
   out.push(']]');
   out.push('');
   out.push('VeilmapFogData = {');
@@ -36,10 +36,11 @@ export function emitLua(dataset, meta) {
       assertFinite('height', e.height);
       assertFinite('offsetX', e.offsetX);
       assertFinite('offsetY', e.offsetY);
-      assertFinite('areaID', e.areaID);
+      for (const id of e.areaIDs) assertFinite('areaID', id);
       for (const id of e.fileDataIDs) assertFinite('fileDataID', id);
+      for (const v of e.hitRect) assertFinite('hitRect', v);
       out.push(
-        `\t\t{${e.width},${e.height},${e.offsetX},${e.offsetY},${e.areaID},"${e.fileDataIDs.join(',')}"},`,
+        `\t\t{${e.width},${e.height},${e.offsetX},${e.offsetY},{${e.areaIDs.join(',')}},"${e.fileDataIDs.join(',')}",{${e.hitRect.join(',')}}},`,
       );
     }
     out.push('\t},');
