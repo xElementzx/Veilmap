@@ -20,6 +20,10 @@ local function apply(key)
 		Veilmap.MapFrame.ApplyScale()
 	elseif key == "mapAlpha" or key == "fadedAlpha" or key == "fadeWhenMoving" then
 		Veilmap.MapFrame.ApplyAlpha()
+	elseif key == "areaTooltips" then
+		Veilmap.Hover.Refresh()
+	elseif key == "areaListEnabled" then
+		Veilmap.AreaList.Refresh()
 	else
 		Veilmap.Coords.Refresh()
 	end
@@ -100,6 +104,10 @@ function Options.Initialise()
 	-- control inside the layout, and the map's tint is the live preview.
 	layout:AddInitializer(CreateSettingsButtonInitializer("Fog colour", "Choose...",
 		openColorPicker, "Colour and opacity of the tint over unexplored areas.", true))
+	addCheckbox("areaTooltips", "Area tooltips and Alt-click waypoints",
+		"Hover an unexplored area on the World Map to see its name. Alt-click it to set a tracked waypoint to it (this replaces your current map pin).")
+	addCheckbox("areaListEnabled", "Unexplored areas list",
+		"Show a list of the zone's unexplored areas beside the World Map. Click an area to set a waypoint to it.")
 
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Map Frame"))
 	addSlider("mapScale", "Map scale", "Size of the world map.", 0.5, 2.0, 0.05, percent)

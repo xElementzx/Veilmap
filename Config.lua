@@ -17,6 +17,11 @@ Config.defaults = {
 	fogColor = { r = 0.1, g = 0.2, b = 0.35, a = 0.85 },
 	fogBattlefieldMap = true,
 
+	-- Unexplored-area hunting (world map only)
+	areaTooltips = true,
+	areaListEnabled = true,
+	areaListCollapsed = false,
+
 	-- Map frame
 	mapScale = 1.0,
 	mapAlpha = 1.0,

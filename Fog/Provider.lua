@@ -28,11 +28,19 @@ end
 
 function VeilmapFogPinMixin:OnReleased()
 	if self.texturePool then self.texturePool:ReleaseAll() end
+	self.entryTextures = nil
+	self.highlighted = nil
 end
 
--- entries: array of {width, height, offsetX, offsetY, areaID, "fileDataIDs"}
+-- entries: array of {width, height, offsetX, offsetY, {areaIDs}, "fileDataIDs", {hitRect}}
 function VeilmapFogPinMixin:Draw(entries, layerInfo, r, g, b, a)
 	self.texturePool:ReleaseAll()
+
+	-- Which textures draw which entry, so the area list can highlight an
+	-- area's patches without redrawing. Keyed by the dataset entry table.
+	self.entryTextures = {}
+	self.highlighted = nil
+	self.baseColor = { r = r, g = g, b = b, a = a }
 
 	local canvas = self:GetMap()
 
@@ -45,6 +53,8 @@ function VeilmapFogPinMixin:Draw(entries, layerInfo, r, g, b, a)
 
 	for i = 1, #entries do
 		local entry = entries[i]
+		local textures = {}
+		self.entryTextures[entry] = textures
 		local width, height = entry[1], entry[2]
 		local offsetX, offsetY = entry[3], entry[4]
 		local fileIDs = { strsplit(",", entry[6]) }
@@ -72,10 +82,49 @@ function VeilmapFogPinMixin:Draw(entries, layerInfo, r, g, b, a)
 					texture:SetVertexColor(r, g, b)
 					texture:SetAlpha(a)
 					texture:Show()
+					textures[#textures + 1] = texture
 				end
 			end
 		end
 	end
+end
+
+-- How far the highlight lifts the fog colour toward white.
+local HIGHLIGHT_LIFT = 0.6
+
+function VeilmapFogPinMixin:Highlight(entries)
+	self:ClearHighlight()
+	if not self.entryTextures then return end
+	local c = self.baseColor
+	local r = c.r + (1 - c.r) * HIGHLIGHT_LIFT
+	local g = c.g + (1 - c.g) * HIGHLIGHT_LIFT
+	local b = c.b + (1 - c.b) * HIGHLIGHT_LIFT
+	for i = 1, #entries do
+		local textures = self.entryTextures[entries[i]]
+		if textures then
+			for j = 1, #textures do
+				textures[j]:SetVertexColor(r, g, b)
+				textures[j]:SetAlpha(1)
+			end
+		end
+	end
+	self.highlighted = entries
+end
+
+function VeilmapFogPinMixin:ClearHighlight()
+	local entries = self.highlighted
+	if not entries or not self.entryTextures then return end
+	local c = self.baseColor
+	for i = 1, #entries do
+		local textures = self.entryTextures[entries[i]]
+		if textures then
+			for j = 1, #textures do
+				textures[j]:SetVertexColor(c.r, c.g, c.b)
+				textures[j]:SetAlpha(c.a)
+			end
+		end
+	end
+	self.highlighted = nil
 end
 
 --------------------------------------------------------------------------------
@@ -124,13 +173,25 @@ function FogProviderMixin:RefreshAllData(fromOnShow)
 	-- our insecure code taints that call chain and gets blocked in combat.
 	-- Releasing pins may also reach protected code, so we bail before
 	-- touching anything, not just before drawing, and pick the refresh back
-	-- up once combat ends. Both canvases need this independently.
+	-- up once combat ends. Both canvases need this independently. The
+	-- published unexplored set (self.current) is deliberately left as it was,
+	-- so hover and the area list keep working on the last good data.
 	if InCombatLockdown() then
 		self.refreshPending = true
 		return
 	end
 
+	self:Rebuild()
+
+	if self.publishes and Veilmap.OnFogRefreshed then
+		Veilmap.OnFogRefreshed()
+	end
+end
+
+function FogProviderMixin:Rebuild()
 	self:RemoveAllData()
+	self.pin = nil
+	self.current = nil
 
 	local db = Veilmap.db
 	-- Each canvas has its own independent switch (fogEnabled for the world
@@ -145,7 +206,7 @@ function FogProviderMixin:RefreshAllData(fromOnShow)
 	-- battlefield-map API difference is caught and reported once instead of
 	-- erroring every refresh. entries/layerInfo/live come back nil (with
 	-- readOk true) for the ordinary "nothing to draw yet" cases.
-	local readOk, entriesOrErr, layerInfo, live = pcall(function()
+	local readOk, entriesOrErr, layerInfo, live, mapID = pcall(function()
 		local canvas = self:GetMap()
 		local mapID = canvas:GetMapID()
 		if not mapID then return nil end
@@ -159,7 +220,7 @@ function FogProviderMixin:RefreshAllData(fromOnShow)
 		if not layerInfo then return nil end
 
 		local live = C_MapExplorationInfo.GetExploredMapTextures(mapID)
-		return entries, layerInfo, live
+		return entries, layerInfo, live, mapID
 	end)
 	if not readOk then
 		self:ReportDrawError(entriesOrErr)
@@ -179,6 +240,15 @@ function FogProviderMixin:RefreshAllData(fromOnShow)
 			unexplored[#unexplored + 1] = e
 		end
 	end
+
+	-- Published before the empty check: a fully explored zone is still a
+	-- zone with fog data, and the area list shows "All explored" for it.
+	self.current = {
+		mapID = mapID,
+		layerWidth = layerInfo.layerWidth,
+		layerHeight = layerInfo.layerHeight,
+		unexplored = unexplored,
+	}
 	if #unexplored == 0 then return end
 
 	-- Guarded draw: AcquirePin/Draw reach canvas and pin-pool APIs, guarded
@@ -187,10 +257,31 @@ function FogProviderMixin:RefreshAllData(fromOnShow)
 	local drawOk, drawErr = pcall(function()
 		local pin = self:GetMap():AcquirePin("VeilmapFogPinTemplate")
 		pin:Draw(unexplored, layerInfo, color.r, color.g, color.b, color.a)
+		self.pin = pin
 	end)
 	if not drawOk then
 		self:ReportDrawError(drawErr)
 	end
+end
+
+-- The latest unexplored set for this canvas, or nil when it has no fog data
+-- (or fog is off). See Rebuild for when it changes. A refresh deferred by
+-- combat leaves self.current describing the previous map, so it is only
+-- handed out while the canvas still shows the map it was built for.
+function FogProviderMixin:GetUnexplored()
+	local current = self.current
+	local map = self:GetMap()
+	if not current or not map or map:GetMapID() ~= current.mapID then return nil end
+	return current
+end
+
+-- Pure texture recolouring on our own pin: no protected calls, safe in combat.
+function FogProviderMixin:Highlight(entries)
+	if self.pin then self.pin:Highlight(entries) end
+end
+
+function FogProviderMixin:ClearHighlight()
+	if self.pin then self.pin:ClearHighlight() end
 end
 
 -- Coverage report for the current map. Used by /veilmap verify. Deliberately
@@ -239,20 +330,24 @@ local fogProviderInstances = {}
 
 -- enabledSetting: the Veilmap.db key that switches fog on for this canvas
 -- ("fogEnabled" for the world map, "fogBattlefieldMap" for the battlefield map).
-local function CreateFogProvider(enabledSetting)
+-- publishes: true only for the world map, whose unexplored set drives hover,
+-- waypoints and the area list (Veilmap.OnFogRefreshed).
+local function CreateFogProvider(enabledSetting, publishes)
 	local provider = CreateFromMixins(FogProviderMixin)
 	-- Per-instance, not module-level: see the comment above FogProviderMixin.
 	provider.warnedDrawErrors = {}
 	provider.refreshPending = false
 	provider.enabledSetting = enabledSetting
+	provider.publishes = publishes
 	fogProviderInstances[#fogProviderInstances + 1] = provider
 	return provider
 end
 
 -- Veilmap.FogProvider must keep resolving to the WORLD MAP instance: Core.lua's
--- /veilmap verify calls Veilmap.FogProvider:Report().
-Veilmap.FogProvider = CreateFogProvider("fogEnabled")
-local BattlefieldFogProvider = CreateFogProvider("fogBattlefieldMap")
+-- /veilmap verify calls Veilmap.FogProvider:Report(), and hover, waypoints and
+-- the area list read Veilmap.FogProvider:GetUnexplored().
+Veilmap.FogProvider = CreateFogProvider("fogEnabled", true)
+local BattlefieldFogProvider = CreateFogProvider("fogBattlefieldMap", false)
 
 -- Redraws fog on every canvas that has a provider attached and is showing.
 -- Called when a fog setting changes; RefreshAllData itself handles combat
@@ -266,6 +361,22 @@ function Veilmap.RefreshFog()
 		end
 	end
 end
+
+-- Display name for an area ID; "Area <id>" when the client has none.
+function Veilmap.AreaName(areaID)
+	return Veilmap.Areas.DisplayName(C_Map.GetAreaInfo(areaID), areaID)
+end
+
+-- Blizzard's own exploration pin refreshes itself on discovery, but the
+-- canvas does not refresh other providers, so without this our fog (and the
+-- area list) would only catch up the next time the map is opened.
+-- RefreshFog only touches canvases that are showing, and RefreshAllData
+-- defers itself in combat.
+local explorationWatcher = CreateFrame("Frame")
+explorationWatcher:RegisterEvent("MAP_EXPLORATION_UPDATED")
+explorationWatcher:SetScript("OnEvent", function()
+	Veilmap.RefreshFog()
+end)
 
 -- Picks a deferred refresh back up once combat ends, for every canvas that
 -- deferred one. Never registers for PLAYER_REGEN_DISABLED: entering combat
@@ -312,6 +423,8 @@ function Veilmap.OnReady()
 	WorldMapFrame:AddDataProvider(Veilmap.FogProvider)
 	Veilmap.MapFrame.Initialise()
 	Veilmap.Coords.Initialise()
+	Veilmap.Hover.Initialise()
+	Veilmap.AreaList.Initialise()
 	Veilmap.Options.Initialise()
 	if WorldMapFrame:IsShown() then
 		Veilmap.FogProvider:RefreshAllData()

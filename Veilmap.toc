@@ -4,16 +4,21 @@
 ## Category: Map
 ## IconTexture: Interface\AddOns\Veilmap\Textures\Icon
 ## Author: xElementzx
-## Version: 1.0.0
+## Version: 1.1.0
 ## SavedVariables: VeilmapDB
 ## X-License: GPL-3.0-or-later
 
 Compat.lua
 Config.lua
 Fog\Geometry.lua
+Fog\Areas.lua
 Fog\Data_Forever.lua
+Fog\Targets_Forever.lua
 Fog\FogPin.xml
 Fog\Provider.lua
+Fog\Waypoint.lua
+Fog\Hover.lua
+Fog\AreaList.lua
 MapFrame.lua
 Coords.lua
 Options.lua
