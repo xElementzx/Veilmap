@@ -17,6 +17,7 @@ Fog\FogPin.xml
 Fog\Provider.lua
 Fog\Waypoint.lua
 Fog\Hover.lua
+Fog\AreaList.lua
 MapFrame.lua
 Coords.lua
 Options.lua
