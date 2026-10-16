@@ -22,9 +22,9 @@ Chat lines must stay under 255 characters; the `/run` lines below do.
 
 One-liners:
 
-A. Map world rectangle (should print the map ID, a continent of 0 or 1, and two numbers):
+A. Map world rectangle (should print the map ID, a continent of 0 or 1, then the world X and Y of the map's top-left corner):
 
-    /run local m=WorldMapFrame:GetMapID() local c,p=C_Map.GetWorldPosFromMapPos(m,CreateVector2D(0,0)) print(m,c,p and p:GetXY())
+    /run local m=WorldMapFrame:GetMapID() local c,p=C_Map.GetWorldPosFromMapPos(m,CreateVector2D(0,0)) print(m,c,p:GetXY())
 
 B. Zoom levels, relative to fully zoomed out:
 
