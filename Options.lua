@@ -24,6 +24,10 @@ local function apply(key)
 		Veilmap.Hover.Refresh()
 	elseif key == "areaListEnabled" then
 		Veilmap.AreaList.Refresh()
+	elseif key == "detailEnabled" or key == "detailStrength" then
+		Veilmap.Detail.Refresh()
+	elseif key == "detailMaxZoom" then
+		-- Applies when Blizzard next rebuilds zoom levels (map change, maximize).
 	else
 		Veilmap.Coords.Refresh()
 	end
@@ -120,6 +124,12 @@ function Options.Initialise()
 	addCheckbox("coordsEnabled", "Show coordinates", "Show player and cursor coordinates beneath the map.")
 	addSlider("coordsPrecision", "Decimal places", "Number of decimal places shown.", 0, 2, 1, whole)
 	addSlider("coordsFontSize", "Font size", "Size of the coordinate text.", 8, 20, 1, whole)
+
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("Map Detail"))
+	addCheckbox("detailEnabled", "Close-zoom detail",
+		"Zoom zone and city maps further, and blend in the game's minimap terrain as you zoom in. Zoom changes apply the next time the map changes.")
+	addSlider("detailStrength", "Detail strength", "How strongly the minimap terrain shows when zoomed in. Applies immediately.", 0, 1, 0.05, percent)
+	addSlider("detailMaxZoom", "Deepest zoom", "How far zone and city maps zoom in. 2x or less keeps Blizzard's normal limit (2.1x). Applies the next time the map changes.", 2, 8, 0.5, function(v) return ("%.1fx"):format(v) end)
 
 	Settings.RegisterAddOnCategory(category)
 end

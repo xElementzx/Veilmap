@@ -55,4 +55,12 @@ test('Config.Merge', async (t) => {
     `);
     assert.equal(result, 'true/true/false');
   });
+
+  await t.test('phase 5 detail settings defaults', async () => {
+    const result = await evalInLuaModule('Config.lua', `
+      local m = Config.Merge(nil, Config.defaults)
+      return tostring(m.detailEnabled) .. "/" .. m.detailStrength .. "/" .. m.detailMaxZoom
+    `);
+    assert.equal(result, 'true/0.6/4');
+  });
 });

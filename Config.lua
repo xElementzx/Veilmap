@@ -22,6 +22,11 @@ Config.defaults = {
 	areaListEnabled = true,
 	areaListCollapsed = false,
 
+	-- Close-zoom detail (world map zone and city maps)
+	detailEnabled = true,
+	detailStrength = 0.6,
+	detailMaxZoom = 4,
+
 	-- Map frame
 	mapScale = 1.0,
 	mapAlpha = 1.0,

@@ -21,7 +21,12 @@ VeilmapFogPinMixin = CreateFromMixins(MapCanvasPinMixin)
 function VeilmapFogPinMixin:OnLoad()
 	self:SetIgnoreGlobalPinScale(true)
 	if self.UseFrameLevelType then
-		self:UseFrameLevelType("PIN_FRAME_LEVEL_MAP_EXPLORATION")
+		-- Above the close-zoom detail layer (EVENT_OVERLAY), which sits above
+		-- Blizzard's explored overlays (MAP_EXPLORATION). FOG_OF_WAR is unused
+		-- on Forever. A canvas without it keeps the fog where it always was.
+		local level = Veilmap.Detail.HasFrameLevel(self:GetMap(), "PIN_FRAME_LEVEL_FOG_OF_WAR")
+			and "PIN_FRAME_LEVEL_FOG_OF_WAR" or "PIN_FRAME_LEVEL_MAP_EXPLORATION"
+		self:UseFrameLevelType(level)
 	end
 	self.texturePool = CreateTexturePool(self, "ARTWORK", -1)
 end
@@ -425,6 +430,7 @@ function Veilmap.OnReady()
 	Veilmap.Coords.Initialise()
 	Veilmap.Hover.Initialise()
 	Veilmap.AreaList.Initialise()
+	Veilmap.Detail.Initialise()
 	Veilmap.Options.Initialise()
 	if WorldMapFrame:IsShown() then
 		Veilmap.FogProvider:RefreshAllData()
