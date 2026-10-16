@@ -11,6 +11,7 @@
 Compat.lua
 Config.lua
 Fog\Geometry.lua
+Fog\Areas.lua
 Fog\Data_Forever.lua
 Fog\FogPin.xml
 Fog\Provider.lua
