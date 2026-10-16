@@ -30,15 +30,51 @@ local function reportError(err)
 	end
 end
 
-local function namesOf(entry)
-	local ids, names = entry[5], {}
-	for i = 1, #ids do
-		names[i] = Veilmap.AreaName(ids[i])
+local function namesOf(areaIDs)
+	local names = {}
+	for i = 1, #areaIDs do
+		names[i] = Veilmap.AreaName(areaIDs[i])
 	end
 	return table.concat(names, ", ")
 end
 
-function Waypoint.Set(entry)
+-- Where to put the waypoint: the terrain target nearest the patch, or the
+-- patch's hit-rect centre when no target lands on this map. Terrain targets
+-- (Fog/Targets_Forever.lua) are chunk centres whose area ID triggers the
+-- discovery; the map art can be much larger than that ground.
+local function targetFor(areaIDs, mapID, entry, layerW, layerH)
+	local cx, cy = Areas.Centre(entry, layerW, layerH)
+	local targets = VeilmapAreaTargets
+	if not targets then return cx, cy end
+
+	local candidates = {}
+	for i = 1, #areaIDs do
+		local t = targets[areaIDs[i]]
+		if t then
+			local continent = t[1]
+			for j = 2, #t - 1, 2 do
+				local ok, uiMapID, position = pcall(C_Map.GetMapPosFromWorldPos,
+					continent, CreateVector2D(t[j], t[j + 1]), mapID)
+				if ok and uiMapID == mapID and position then
+					local x, y = position:GetXY()
+					if Areas.OnMap(x, y) then
+						candidates[#candidates + 1] = { x = x, y = y }
+					end
+				end
+			end
+		end
+	end
+
+	local best = Areas.Nearest(candidates, cx, cy, layerW, layerH)
+	if best then return best.x, best.y end
+	return cx, cy
+end
+
+function Waypoint.Set(entry, areaIDs)
+	-- Which areas to aim at: all the overlay's areas for an Alt-click (any of
+	-- them reveals it), or just the list row's area.
+	areaIDs = areaIDs or entry[5]
+
 	-- A blocked protected call shows Blizzard's "action blocked" popup rather
 	-- than raising an error we could catch, so refuse up front.
 	if InCombatLockdown() then
@@ -50,7 +86,7 @@ function Waypoint.Set(entry)
 	if not current then return end
 
 	local mapID = current.mapID
-	local x, y = Areas.Centre(entry, current.layerWidth, current.layerHeight)
+	local x, y = targetFor(areaIDs, mapID, entry, current.layerWidth, current.layerHeight)
 
 	local ok, result = pcall(function()
 		if not C_Map.CanSetUserWaypointOnMap(mapID) then return false end
@@ -72,7 +108,7 @@ function Waypoint.Set(entry)
 		x = x,
 		y = y,
 		key = Geometry.OverlayKey(entry[1], entry[2], entry[3], entry[4]),
-		names = namesOf(entry),
+		names = namesOf(areaIDs),
 	}
 	print(PREFIX .. "waypoint set to " .. ours.names .. ".")
 end

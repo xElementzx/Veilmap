@@ -134,6 +134,21 @@ function Areas.IsClick(downX, downY, upX, upY)
 	return abs(upX - downX) <= CLICK_SLOP and abs(upY - downY) <= CLICK_SLOP
 end
 
+-- The point nearest (x, y), measured in layer pixels; nil for no points.
+-- Strict < keeps the earlier point on a tie.
+function Areas.Nearest(points, x, y, layerW, layerH)
+	local best, bestDistance
+	for i = 1, #points do
+		local p = points[i]
+		local dx, dy = (p.x - x) * layerW, (p.y - y) * layerH
+		local distance = dx * dx + dy * dy
+		if not best or distance < bestDistance then
+			best, bestDistance = p, distance
+		end
+	end
+	return best
+end
+
 function Areas.PointMatches(ax, ay, bx, by)
 	return abs(ax - bx) <= POINT_TOLERANCE and abs(ay - by) <= POINT_TOLERANCE
 end

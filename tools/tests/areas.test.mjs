@@ -219,3 +219,34 @@ test('Areas.PointMatches', async (t) => {
     assert.equal(await run('return Areas.PointMatches(0.25, 0.5, 0.25, 0.4) and "y" or "n"'), 'n');
   });
 });
+
+test('Areas.Nearest', async (t) => {
+  await t.test('returns nil for no points', async () => {
+    assert.equal(await run('return Areas.Nearest({}, 0.5, 0.5, 100, 100) == nil and "nil" or "pt"'), 'nil');
+  });
+
+  await t.test('picks the nearest point', async () => {
+    const r = await run(`
+      local p = Areas.Nearest({ { x = 0.9, y = 0.9 }, { x = 0.4, y = 0.5 }, { x = 0.1, y = 0.1 } }, 0.5, 0.5, 100, 100)
+      return p.x .. "," .. p.y
+    `);
+    assert.equal(r, '0.4,0.5');
+  });
+
+  await t.test('measures in layer pixels, so aspect ratio matters', async () => {
+    // Layer 1000 x 100. A is 0.05 away in x (50 px); B is 0.2 away in y (20 px).
+    const r = await run(`
+      local p = Areas.Nearest({ { x = 0.55, y = 0.5 }, { x = 0.5, y = 0.7 } }, 0.5, 0.5, 1000, 100)
+      return p.y
+    `);
+    assert.equal(r, 0.7);
+  });
+
+  await t.test('a tie goes to the earlier point', async () => {
+    const r = await run(`
+      local p = Areas.Nearest({ { x = 0.4, y = 0.5 }, { x = 0.6, y = 0.5 } }, 0.5, 0.5, 100, 100)
+      return p.x
+    `);
+    assert.equal(r, 0.4);
+  });
+});

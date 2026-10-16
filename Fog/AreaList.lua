@@ -73,7 +73,7 @@ local function onRowLeave()
 end
 
 local function onRowClick(row)
-	Veilmap.Waypoint.Set(row.group.largest)
+	Veilmap.Waypoint.Set(row.group.largest, { row.group.areaID })
 end
 
 local function getRow(i)
