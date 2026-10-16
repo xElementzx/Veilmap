@@ -175,8 +175,11 @@ WoW API calls. An area ID with no name sorts last and displays as `Area <id>`.
      `Geometry.BuildExploredKeySet(C_MapExplorationInfo.GetExploredMapTextures(mapID))`, call
      `C_Map.ClearUserWaypoint()`, forget ours, and print
      `Veilmap: discovered <names>, waypoint cleared.`
-- **Combat:** if the in-game check (section 9) shows `SetUserWaypoint` is unusable in combat,
-  `Set` refuses during `InCombatLockdown()` with `Veilmap: can't set a waypoint in combat.`
+- **Combat:** `Set` refuses during `InCombatLockdown()` with
+  `Veilmap: can't set a waypoint in combat.` A blocked protected call does not raise a Lua
+  error that could be caught; it shows Blizzard's "action blocked" popup. So refusing up front
+  is the only safe behaviour. If the in-game check (section 9) shows the waypoint API is
+  unrestricted in combat, the refusal can be lifted in a later release.
 
 ## 6. List panel (`AreaList.lua`)
 
@@ -184,13 +187,17 @@ WoW API calls. An area ID with no name sorts last and displays as `Area <id>`.
   scales with the map. When collapsed, only a small toggle tab is visible; the tab toggles the
   panel. If the in-game check finds Blizzard docking something on the right (e.g. a quest log
   side panel), the panel moves to the left edge. The edge is one constant.
+- **Maximized map:** the outer edge is off-screen, so the tab and panel dock **inside** the
+  map canvas's top-right corner and open inwards. They re-anchor on map show and size change,
+  using `HookScript` (never `hooksecurefunc` on `WorldMapFrame` methods; see `MapFrame.lua`).
 - **Content:**
-  - Header: `Unexplored — N areas` (`Unexplored — 1 area` in the singular).
+  - Header: `Unexplored: N areas` (`Unexplored: 1 area` in the singular). It is plain ASCII
+    because the game's default font may lack an em dash glyph.
   - One row per group from `Areas.Group`, sorted by `Areas.Sort`. The player position is
     passed only when `C_Map.GetPlayerMapPosition(current.mapID, "player")` returns one.
   - Up to 27 groups exist in a single zone today. The panel scrolls when its rows are taller
     than the map.
-  - A fully explored zone shows `All explored`.
+  - A fully explored zone shows the header `All explored` and no rows.
   - On maps with no fog data (`current == nil`: continents, dungeons, fog off), the panel and
     tab are **hidden entirely**.
 - **Row click:** `Waypoint.Set(group.largest)`.
@@ -243,11 +250,11 @@ never wrapped and fails loudly.
 - `syntax.test.mjs` picks up the new Lua files automatically (Lua 5.1 and 5.4 layers).
 - luacheck clean, with new globals added to `.luacheckrc` as needed.
 
-**In-game checklist** (`docs/ingame-checks-phase-4.md`; replaces the stale Foglight-era
-`ingame-checks.txt`, which is deleted):
+**In-game checklist** (`docs/ingame-checks-phase-4.md`). The stale Foglight-era
+`ingame-checks.txt` in the repo root is git-ignored scratch and is left alone.
 
 1. Alt + left-click on a zone map: does Blizzard do anything natively?
-2. `C_Map.SetUserWaypoint` and super-tracking: do they work in combat?
+2. In combat, Alt-click prints the refusal and nothing is blocked.
 3. Is the world map's right outer edge free (quest log, side panels)?
 4. Hovering a quest POI over a fog patch shows Blizzard's tooltip, not ours.
 5. Hit rects line up with the visible fog patches in two or three zones.
@@ -256,6 +263,7 @@ never wrapped and fails loudly.
 7. A multi-area overlay lists every name.
 8. The list sorts by distance in the player's zone and alphabetically elsewhere.
 9. Row hover highlights the right patches.
+10. With the map maximized, the tab and panel sit inside the top-right corner.
 
 ## 10. Release
 
