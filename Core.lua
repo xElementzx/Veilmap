@@ -52,6 +52,18 @@ function handlers.verify()
 	end
 end
 
+-- Temporary, for the phase 5 in-game taint test: lets the deeper-zoom hook
+-- run in combat for this session only. Removed before release.
+function handlers.debug(args)
+	if args == "combatzoom" then
+		Veilmap.Zoom.combatDebug = not Veilmap.Zoom.combatDebug
+		print(("|cff33ff99Veilmap|r: combat zoom debug %s (this session only)"):format(
+			Veilmap.Zoom.combatDebug and "ON" or "off"))
+	else
+		print("|cff33ff99Veilmap|r: /vm debug combatzoom")
+	end
+end
+
 SLASH_VEILMAP1 = "/veilmap"
 SLASH_VEILMAP2 = "/vm"
 SlashCmdList["VEILMAP"] = function(msg)

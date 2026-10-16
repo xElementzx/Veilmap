@@ -431,6 +431,7 @@ function Veilmap.OnReady()
 	Veilmap.Hover.Initialise()
 	Veilmap.AreaList.Initialise()
 	Veilmap.Detail.Initialise()
+	Veilmap.Zoom.Initialise()
 	Veilmap.Options.Initialise()
 	if WorldMapFrame:IsShown() then
 		Veilmap.FogProvider:RefreshAllData()
