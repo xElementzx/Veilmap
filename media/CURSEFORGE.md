@@ -25,6 +25,12 @@ Built for **WoW Forever**.
 - When you discover the area, Veilmap **clears the waypoint** for you. A pin you placed yourself is never touched.
 - Each feature has its own toggle in the settings.
 
+### Close-zoom detail
+- **Zoom further** into zone and city maps than the game normally allows: up to 8x, set in the options (default 4x).
+- As you zoom in, the game's own **minimap terrain fades in** under the map: roads, tree cover, buildings and rocks. Zoomed right out, the map looks exactly as it always did.
+- Choose how strongly the terrain shows, or turn the whole feature off.
+- The fog tint stays on top, so unexplored areas still stand out.
+
 ### Movable, scalable map
 - **Drag** the World Map anywhere on screen. Veilmap remembers where you put it.
 - **Scale** the map from 50% to 200%.
