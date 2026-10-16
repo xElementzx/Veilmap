@@ -47,4 +47,12 @@ test('Config.Merge', async (t) => {
     `);
     assert.equal(result, 'TOPLEFT');
   });
+
+  await t.test('phase 4 settings default on, with the list expanded', async () => {
+    const result = await evalInLuaModule('Config.lua', `
+      local m = Config.Merge(nil, Config.defaults)
+      return tostring(m.areaTooltips) .. "/" .. tostring(m.areaListEnabled) .. "/" .. tostring(m.areaListCollapsed)
+    `);
+    assert.equal(result, 'true/true/false');
+  });
 });

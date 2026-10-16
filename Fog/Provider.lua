@@ -423,6 +423,7 @@ function Veilmap.OnReady()
 	WorldMapFrame:AddDataProvider(Veilmap.FogProvider)
 	Veilmap.MapFrame.Initialise()
 	Veilmap.Coords.Initialise()
+	Veilmap.Hover.Initialise()
 	Veilmap.Options.Initialise()
 	if WorldMapFrame:IsShown() then
 		Veilmap.FogProvider:RefreshAllData()
