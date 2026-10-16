@@ -31,6 +31,9 @@ local function cursorFraction()
 	return cx, cy
 end
 
+-- Shared with Fog/Hover.lua, which hit-tests fog patches under the cursor.
+Coords.CursorFraction = cursorFraction
+
 local function onUpdate(_, delta)
 	elapsedSince = elapsedSince + delta
 	if elapsedSince < THROTTLE then return end

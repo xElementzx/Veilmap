@@ -10,13 +10,13 @@ globals = {
 }
 
 read_globals = {
-	"BattlefieldMapFrame", "C_AddOns", "C_Map", "C_MapExplorationInfo", "C_Timer",
+	"BattlefieldMapFrame", "C_AddOns", "C_Map", "C_MapExplorationInfo", "C_SuperTrack", "C_Timer",
 	"ColorPickerFrame", "CreateFrame", "CreateFromMixins", "CreateTexturePool",
 	"CreateSettingsButtonInitializer", "CreateSettingsListSectionHeaderInitializer",
-	"DeltaLerp", "GameFontNormal", "GetBuildInfo", "GetCursorPosition",
-	"InCombatLockdown", "IsPlayerMoving",
+	"DeltaLerp", "GameFontNormal", "GameTooltip", "GetBuildInfo", "GetCursorPosition",
+	"GetMouseFoci", "InCombatLockdown", "IsAltKeyDown", "IsPlayerMoving",
 	"MapCanvasDataProviderMixin", "MapCanvasPinMixin",
 	"MinimalSliderWithSteppersMixin", "PLAYER", "PlayerMovementFrameFader",
-	"Settings", "UIParent", "WorldMapFrame",
+	"Settings", "UIParent", "UiMapPoint", "WorldMapFrame",
 	"strsplit",
 }
