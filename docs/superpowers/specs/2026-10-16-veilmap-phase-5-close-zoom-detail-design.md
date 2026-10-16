@@ -218,7 +218,7 @@ The options panel gets a new "Map Detail" section.
 |---|---|---|---|
 | `detailEnabled` | `true` | Checkbox "Close-zoom detail" (extra zoom and minimap layer) | Layer: immediately. Zoom: next map change |
 | `detailStrength` | `0.6` | Slider 0–100% | Immediately (view update) |
-| `detailMaxZoom` | `4` | Slider 2.1×–8×, step 0.5, with 2.1 as the lowest stop | Next map change |
+| `detailMaxZoom` | `4` | Slider 2×–8×, step 0.5 (2× or less = Blizzard's normal 2.14× limit) | Next map change |
 
 The sliders' tooltips say when a change applies. These settings are subject to the known
 Forever saved-variables bug.
